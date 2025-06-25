@@ -1,0 +1,100 @@
+{
+  "sunset-ridge": {
+    "cats": {
+      "allowed": true,
+      "fee": 50,
+      "deposit": 200,
+      "monthly_rent": 25,
+      "max_pets": 2
+    },
+    "dogs": {
+      "allowed": true,
+      "fee": 75,
+      "deposit": 300,
+      "monthly_rent": 50,
+      "max_pets": 2,
+      "weight_limit": 60
+    },
+    "birds": {
+      "allowed": true,
+      "fee": 25,
+      "deposit": 100,
+      "monthly_rent": 15,
+      "max_pets": 2
+    },
+    "fish": {
+      "allowed": true,
+      "fee": 0,
+      "deposit": 0,
+      "monthly_rent": 0
+    },
+    "small_pets": {
+      "allowed": true,
+      "fee": 30,
+      "deposit": 150,
+      "monthly_rent": 20,
+      "max_pets": 2
+    }
+  },
+  "oak-valley": {
+    "cats": {
+      "allowed": true,
+      "fee": 40,
+      "deposit": 150,
+      "monthly_rent": 20,
+      "max_pets": 1
+    },
+    "dogs": {
+      "allowed": true,
+      "fee": 60,
+      "deposit": 250,
+      "monthly_rent": 40,
+      "max_pets": 1,
+      "weight_limit": 50
+    },
+    "birds": {
+      "allowed": false,
+      "notes": "Birds not permitted due to noise restrictions"
+    },
+    "fish": {
+      "allowed": true,
+      "fee": 0,
+      "deposit": 0,
+      "monthly_rent": 0
+    },
+    "small_pets": {
+      "allowed": true,
+      "fee": 25,
+      "deposit": 100,
+      "monthly_rent": 15,
+      "max_pets": 1
+    }
+  },
+  "downtown-lofts": {
+    "cats": {
+      "allowed": true,
+      "fee": 100,
+      "deposit": 300,
+      "monthly_rent": 30,
+      "max_pets": 1
+    },
+    "dogs": {
+      "allowed": false,
+      "notes": "No dogs allowed due to building policy"
+    },
+    "birds": {
+      "allowed": false,
+      "notes": "No birds allowed due to building policy"
+    },
+    "fish": {
+      "allowed": true,
+      "fee": 0,
+      "deposit": 0,
+      "monthly_rent": 0
+    },
+    "small_pets": {
+      "allowed": false,
+      "notes": "Small pets not permitted"
+    }
+  }
+}

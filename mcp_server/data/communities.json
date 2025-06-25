@@ -1,0 +1,17 @@
+{
+  "sunset-ridge": {
+    "name": "Sunset Ridge Apartments",
+    "location": "Downtown",
+    "amenities": ["pool", "gym", "parking", "laundry", "dog_park"]
+  },
+  "oak-valley": {
+    "name": "Oak Valley Residences", 
+    "location": "Suburbs",
+    "amenities": ["pool", "tennis", "parking", "clubhouse"]
+  },
+  "downtown-lofts": {
+    "name": "Downtown Lofts",
+    "location": "City Center", 
+    "amenities": ["rooftop", "gym", "concierge", "bike_storage"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "sunset-ridge": [
+    {
+      "unit_id": "12B",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1100,
+      "description": "Corner unit with balcony and city views",
+      "floor": 12,
+      "available_date": "2025-07-15",
+      "base_rent": 2400,
+      "available": true
+    },
+    {
+      "unit_id": "8A", 
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "sqft": 750,
+      "description": "Modern 1-bedroom with in-unit laundry",
+      "floor": 8,
+      "available_date": "2025-06-30",
+      "base_rent": 1800,
+      "available": true
+    },
+    {
+      "unit_id": "15C",
+      "bedrooms": 3,
+      "bathrooms": 2.5,
+      "sqft": 1400,
+      "description": "Spacious 3-bedroom with walk-in closets",
+      "floor": 15,
+      "available_date": "2025-08-01",
+      "base_rent": 3200,
+      "available": true
+    },
+    {
+      "unit_id": "4D",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1050,
+      "description": "Ground floor unit with patio access",
+      "floor": 4,
+      "available_date": "2025-07-01", 
+      "base_rent": 2600,
+      "available": true
+    }
+  ],
+  "oak-valley": [
+    {
+      "unit_id": "A101",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1200,
+      "description": "Garden-style apartment with private entrance",
+      "floor": 1,
+      "available_date": "2025-07-10",
+      "base_rent": 2200,
+      "available": true
+    },
+    {
+      "unit_id": "B205",
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "sqft": 800,
+      "description": "Second floor unit with vaulted ceilings",
+      "floor": 2,
+      "available_date": "2025-06-25",
+      "base_rent": 1650,
+      "available": true
+    }
+  ],
+  "downtown-lofts": [
+    {
+      "unit_id": "301",
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "sqft": 900,
+      "description": "Industrial loft with exposed brick",
+      "floor": 3,
+      "available_date": "2025-07-20",
+      "base_rent": 2100,
+      "available": true
+    },
+    {
+      "unit_id": "502",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1300,
+      "description": "Modern loft with floor-to-ceiling windows",
+      "floor": 5,
+      "available_date": "2025-08-15",
+      "base_rent": 2900,
+      "available": true
+    }
+  ]
+}

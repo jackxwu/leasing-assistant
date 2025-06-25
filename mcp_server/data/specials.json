@@ -1,0 +1,19 @@
+[
+  {
+    "name": "First Month Free",
+    "discount_type": "first_month_free",
+    "min_lease": 12
+  },
+  {
+    "name": "Move-in Special",
+    "discount_type": "flat_discount",
+    "amount": 500,
+    "min_lease": 6
+  },
+  {
+    "name": "Summer Special",
+    "discount_type": "percentage",
+    "amount": 10,
+    "expires": "2025-08-31"
+  }
+]

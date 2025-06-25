@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "leasing-assistant": {
+      "command": "/Users/chenhongzou/dev/assistant/mcp_server/.venv/bin/pytho",
+      "args": ["server.py"],
+      "cwd": "/Users/chenhongzou/dev/assistant/mcp_server",
+      "env": {
+        "PYTHONPATH": "/Users/chenhongzou/dev/assistant/mcp_server"
+      }
+    }
+  }
+}

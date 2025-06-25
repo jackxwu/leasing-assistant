@@ -13,89 +13,85 @@ frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
-# Backend (Python/FastAPI)
-backend/__pycache__/
-backend/**/__pycache__/
-backend/**/**/__pycache__/
-backend/*.py[cod]
-backend/**/*.py[cod]
-backend/*$py.class
-backend/**/*$py.class
-backend/*.so
-backend/.Python
-backend/build/
-backend/develop-eggs/
-backend/dist/
-backend/downloads/
-backend/eggs/
-backend/.eggs/
-backend/lib/
-backend/lib64/
-backend/parts/
-backend/sdist/
-backend/var/
-backend/wheels/
-backend/share/python-wheels/
-backend/*.egg-info/
-backend/.installed.cfg
-backend/*.egg
-backend/MANIFEST
+# Python (Backend, MCP Server, and any Python projects)
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # PyInstaller
-backend/*.manifest
-backend/*.spec
+*.manifest
+*.spec
 
 # Installer logs
-backend/pip-log.txt
-backend/pip-delete-this-directory.txt
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-backend/htmlcov/
-backend/.tox/
-backend/.nox/
-backend/.coverage
-backend/.coverage.*
-backend/.cache
-backend/nosetests.xml
-backend/coverage.xml
-backend/*.cover
-backend/*.py,cover
-backend/.hypothesis/
-backend/.pytest_cache/
-backend/cover/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
 # Virtual environments
-backend/.env
-backend/.venv
-backend/env/
-backend/venv/
-backend/ENV/
-backend/env.bak/
-backend/venv.bak/
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Spyder project settings
-backend/.spyderproject
-backend/.spyproject
+.spyderproject
+.spyproject
 
 # Rope project settings
-backend/.ropeproject
+.ropeproject
 
 # mkdocs documentation
-backend/site
+site/
 
 # mypy
-backend/.mypy_cache/
-backend/.dmypy.json
-backend/dmypy.json
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # Pyre type checker
-backend/.pyre/
+.pyre/
 
 # pytype static type analyzer
-backend/.pytype/
+.pytype/
 
 # Cython debug symbols
-backend/cython_debug/
+cython_debug/
 
 # IDEs
 .vscode/

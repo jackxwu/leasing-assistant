@@ -1,10 +1,10 @@
-# Renter Chat Application
+# Leasing Assistant
 
 A full-stack chat application for prospective renters with intelligent response handling and actionable next steps.
 
 ## Requirements Summary
 
-This is a take-home exercise implementing a **Mini Leasing Assistant API** that processes prospective renter inquiries and provides intelligent responses.
+This is implemention of a **Mini Leasing Assistant API** that processes prospective renter inquiries and provides intelligent responses.
 
 ### Core Scenario
 - Prospective renter sends free-text message (email/SMS)

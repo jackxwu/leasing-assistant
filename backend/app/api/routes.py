@@ -21,7 +21,7 @@ async def reply_to_message(chat_request: ChatRequest, request: Request) -> ChatR
     logger.debug(f"  Preferences: {chat_request.preferences}")
     
     try:
-        response = agent_service.process_message(chat_request)
+        response = await agent_service.process_message(chat_request)
         logger.debug(f"Generated response - ID: {request_id}")
         logger.debug(f"  Reply: {response.reply}")
         logger.debug(f"  Action: {response.action}")

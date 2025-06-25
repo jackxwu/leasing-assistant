@@ -37,9 +37,17 @@ npm test             # Run tests
 ```bash
 cd backend
 pip install -r requirements.txt  # Install dependencies
-python -m app.main               # Start development server (http://localhost:8000)
-# or
-uvicorn app.main:app --reload    # Alternative start command
+export CLAUDE_API_KEY=your_key   # Set Claude API key (required for LLM features)
+make start-backend               # Start development server (http://localhost:8000)
+# or use uvicorn directly:
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Full Application
+```bash
+make dev                         # Start both frontend and backend in parallel
+make start-backend               # Start backend only
+make start-frontend              # Start frontend only
 ```
 
 ## API Contract

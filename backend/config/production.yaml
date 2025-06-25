@@ -1,0 +1,52 @@
+app:
+  name: "Renter Chat API"
+  version: "1.0.0"
+  environment: "production"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  debug: false
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+  handlers:
+    - type: "console"
+      level: "WARNING"
+    - type: "file"
+      level: "INFO"
+      filename: "logs/app.log"
+      max_bytes: 52428800  # 50MB
+      backup_count: 10
+
+cors:
+  allow_origins:
+    - "https://yourdomain.com"
+    - "https://www.yourdomain.com"
+  allow_credentials: true
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "OPTIONS"
+  allow_headers:
+    - "Content-Type"
+    - "Authorization"
+
+llm:
+  provider: "openai"  # openai, claude, gemini
+  model: "gpt-4"
+  max_tokens: 300
+  temperature: 0.5
+  timeout: 60
+
+database:
+  type: "postgresql"
+  url: "postgresql://user:password@localhost/renter_chat_prod"
+  echo: false
+
+observability:
+  enable_request_logging: true
+  log_llm_usage: true
+  log_tool_calls: true

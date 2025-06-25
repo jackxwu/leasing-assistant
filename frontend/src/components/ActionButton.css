@@ -1,0 +1,48 @@
+.action-container {
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.action-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-button.propose-tour {
+  background-color: #28a745;
+  color: white;
+}
+
+.action-button.propose-tour:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.action-button.handoff {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.action-button.handoff:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
+.clarification-prompt {
+  padding: 12px 16px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.clarification-text {
+  color: #856404;
+  font-style: italic;
+}

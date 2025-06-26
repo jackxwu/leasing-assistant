@@ -20,6 +20,27 @@
   font-size: 1.5rem;
 }
 
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-button {
+  background: #3182ce;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.history-button:hover {
+  background: #2c5aa0;
+}
+
 .lead-info {
   color: #666;
   font-size: 0.9rem;

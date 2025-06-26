@@ -20,6 +20,7 @@ export interface ChatRequest {
   message: string;
   preferences?: Preferences;
   community_id: string;
+  client_id: string;
 }
 
 export interface ChatResponse {

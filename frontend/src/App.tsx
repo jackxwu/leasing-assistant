@@ -10,17 +10,15 @@ function App() {
     email: "jane@example.com"
   };
 
-  const mockPreferences: Preferences = {
-    bedrooms: 2,
-    move_in: "2025-07-01"
-  };
+  // Start with completely empty preferences - let user specify them naturally
+  const mockPreferences: Preferences | undefined = undefined;
 
   return (
     <div className="App">
       <ChatWorkspace
         lead={mockLead}
         preferences={mockPreferences}
-        communityId="sunset-ridge"
+        communityId="unknown"
       />
     </div>
   );

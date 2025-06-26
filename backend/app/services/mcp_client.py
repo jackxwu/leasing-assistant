@@ -24,7 +24,7 @@ class MCPClient:
         
         try:
             # For now, we'll use direct function calls since MCP stdio can be complex
-            # In a production environment, you'd want proper MCP stdio communication
+            # In a production environment, we will use proper MCP stdio communication
             logger.info("MCP Client initialized (using direct function calls)")
             self.initialized = True
         except Exception as e:
@@ -64,7 +64,7 @@ class MCPClient:
             else:
                 raise ValueError(f"Unknown tool: {tool_name}")
             
-            logger.info(f"MCP tool {tool_name} called successfully")
+            logger.info(f"MCP tool {tool_name} called. result is: {result}")
             return result
             
         except Exception as e:

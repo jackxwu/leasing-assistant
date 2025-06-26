@@ -178,6 +178,55 @@ The API should return a JSON response with:
 - **Credit Balance Error**: Add credits to your Claude API account
 - **Connection Error**: Ensure backend server is running on port 8000
 
+## MCP Implementation Notes
+
+This project uses a **simplified MCP approach** rather than the full MCP protocol:
+
+**Current Implementation (Direct Function Calls):**
+- MCP tools are imported directly as Python functions
+- All code runs in a single backend process
+- Simpler deployment and debugging
+
+**Full MCP Protocol Would Use:**
+- Separate MCP server process communicating via JSON-RPC
+- Process isolation between backend and tools
+- Standard MCP protocol for cross-language compatibility
+
+The current approach provides the **benefits of MCP** (standardized tool definitions, proper abstractions) without the **complexity of separate processes**. This is ideal for single-application deployments where simplicity and performance are prioritized over protocol standardization.
+
+## Vector Similarity Search for Pet Policies
+
+The system uses **FAISS vector similarity search** to intelligently match user pet queries to our predefined pet policy categories.
+
+### The Problem
+Users ask about pets using natural language that doesn't exactly match our data structure:
+- User: "Can I have a **hamster**?" → Our data has: `"small_pets"`
+- User: "Do you allow **puppies**?" → Our data has: `"dog"`
+- User: "What about **bunnies**?" → Our data has: `"small_pets"`
+
+### The Solution
+**Vector Semantic Matching:**
+1. **FAISS Index**: Build vector embeddings for all pet types (`dog`, `cat`, `bird`, `fish`, `small_pets`)
+2. **Query Encoding**: Convert user queries ("hamster", "puppy") to vectors using `sentence-transformers`
+3. **Similarity Search**: Find the closest matching pet type with confidence scores
+4. **Intelligent Fallback**: Falls back to exact matching if vector search fails
+
+### Example Matches
+```
+"hamster" → "small_pets" (confidence: 0.78)
+"puppy" → "dog" (confidence: 0.85)
+"kitten" → "cat" (confidence: 0.82)
+"bunny" → "small_pets" (confidence: 0.76)
+```
+
+### Configuration
+- **Confidence Threshold**: 0.6 (configurable)
+- **Model**: `all-MiniLM-L6-v2` (fast, good quality)
+- **Fallback**: Exact string matching if vector search fails
+- **Caching**: Search results cached for performance
+
+This enables natural conversation while maintaining accurate policy lookups.
+
 ## Project Structure
 
 ```

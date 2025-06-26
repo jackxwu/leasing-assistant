@@ -30,3 +30,26 @@ async def reply_to_message(chat_request: ChatRequest, request: Request) -> ChatR
     except Exception as e:
         logger.error(f"Error processing chat request - ID: {request_id}, Error: {str(e)}")
         raise
+
+@router.get("/api/memory/stats")
+async def get_memory_stats():
+    """
+    Get agent memory statistics.
+    """
+    return agent_service.get_memory_stats()
+
+@router.get("/api/conversation/{client_id}")
+async def get_conversation_history(client_id: str):
+    """
+    Get conversation history for a client.
+    """
+    history = agent_service.get_conversation_history(client_id)
+    return {"client_id": client_id, "messages": history}
+
+@router.delete("/api/memory/{client_id}")
+async def clear_client_memory(client_id: str):
+    """
+    Clear memory for a specific client.
+    """
+    success = agent_service.clear_client_memory(client_id)
+    return {"success": success, "client_id": client_id}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ActionButton } from './ActionButton';
+import ConversationHistory from './ConversationHistory';
 import { chatApi } from '../services/chatApi';
 import { ChatMessage as ChatMessageType, ChatResponse, Lead, Preferences } from '../types/chat';
 import './ChatWorkspace.css';
@@ -20,6 +21,7 @@ export const ChatWorkspace: React.FC<ChatWorkspaceProps> = ({
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -78,9 +80,18 @@ export const ChatWorkspace: React.FC<ChatWorkspaceProps> = ({
   return (
     <div className="chat-workspace">
       <div className="chat-header">
-        <h2>Chat with {communityId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
-        <div className="lead-info">
-          <span>{lead.name} ({lead.email})</span>
+        <h2>Chat with {communityId === 'unknown' ? 'Leasing Assistant' : communityId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        <div className="header-actions">
+          <button 
+            className="history-button"
+            onClick={() => setShowHistory(true)}
+            title="View conversation history"
+          >
+            📖 History
+          </button>
+          <div className="lead-info">
+            <span>{lead.name} ({lead.email})</span>
+          </div>
         </div>
       </div>
       
@@ -119,6 +130,10 @@ export const ChatWorkspace: React.FC<ChatWorkspaceProps> = ({
         onSendMessage={handleSendMessage}
         disabled={isLoading}
       />
+
+      {showHistory && (
+        <ConversationHistory onClose={() => setShowHistory(false)} />
+      )}
     </div>
   );
 };

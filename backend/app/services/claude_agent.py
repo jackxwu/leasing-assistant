@@ -92,13 +92,13 @@ class ClaudeAgentService:
     
     def _create_system_prompt(self, community_id: str, lead_name: str) -> str:
         """Create the system prompt for Claude."""
-        community_display = community_id.replace('-', ' ').title()
+        community_display = community_id.replace('-', ' ').title() if community_id != "unknown" else "Multiple Communities"
         
-        return f"""You are a helpful leasing assistant for {community_display} apartments. Your goal is to help prospective renters find their perfect home.
+        return f"""You are a helpful leasing assistant helping prospective renters find their perfect home.
 
 Lead Information:
 - Lead name: {lead_name}
-- Community: {community_display}
+- Current community context: {community_display}
 
 Your Role:
 - Be friendly, professional, and helpful
@@ -107,17 +107,28 @@ Your Role:
 - Provide accurate information using the available tools
 - Guide conversations toward scheduling tours when appropriate
 
+IMPORTANT CONTEXT HANDLING:
+- Each message contains structured context with "CURRENT MESSAGE" and "LEARNED PREFERENCES"
+- Pay attention to learned preferences from conversation history - don't re-ask for information already provided
+- If community_id is "unknown" and no preferred_communities in learned preferences, ask which community they're interested in
+- If preferred_communities exist in learned preferences, use that community for tool calls
+- For availability and pricing queries, you need both community and move-in date - ask for missing information
+- Use conversation history to maintain context and avoid repetitive questions
+
 Available Actions:
 - "propose_tour": When you want to suggest scheduling a tour (include a proposed_time)
-- "ask_clarification": When you need more information from the lead
+- "ask_clarification": When you need more information that hasn't been provided before
 - "handoff_human": When the inquiry is complex or requires human assistance
 
 Guidelines:
 - Always check availability, pet policies, and pricing using the provided tools
+- For availability/pricing tools, you need both community and move-in date
 - Be specific about dates, prices, and unit details
 - If you don't have information, use tools to get it or suggest connecting with a specialist
 - Keep responses conversational but informative
 - Focus on benefits and features that match the lead's needs
+- Don't repeat questions that have already been answered in the conversation
+- Ask for missing critical information in logical order: community → move-in date → other details
 
 Remember: You have access to real-time data through tools, so use them to provide accurate information."""
     
@@ -185,18 +196,87 @@ Remember: You have access to real-time data through tools, so use them to provid
         # Default to clarification if unclear
         return "ask_clarification", None
     
-    async def process_message(self, request: ChatRequest) -> ChatResponse:
+    def _build_current_context(self, request: ChatRequest, client_memory=None) -> str:
+        """Build comprehensive context for the current message."""
+        
+        # Start with current message
+        context_parts = [
+            "=== CURRENT MESSAGE ===",
+            f"Lead: {request.lead.name} ({request.lead.email})",
+            f"Message: {request.message}",
+            f"Community ID: {request.community_id}"
+        ]
+        
+        # Add current preferences from request (if any)
+        if request.preferences:
+            req_prefs = request.preferences.model_dump()
+            # Filter out empty/None values
+            filtered_req_prefs = {k: v for k, v in req_prefs.items() 
+                                if v is not None and v != "" and v != []}
+            if filtered_req_prefs:
+                context_parts.append(f"Request Preferences: {filtered_req_prefs}")
+        
+        # Add learned preferences from memory
+        if client_memory and hasattr(client_memory.preferences, 'model_dump'):
+            learned_prefs = client_memory.preferences.model_dump()
+            # Filter out empty/None values for cleaner context
+            filtered_prefs = {k: v for k, v in learned_prefs.items() 
+                            if v is not None and v != [] and v != {}}
+            if filtered_prefs:
+                context_parts.extend([
+                    "",
+                    "=== LEARNED PREFERENCES (from conversation history) ===",
+                    f"Preferences: {filtered_prefs}"
+                ])
+        
+        # Add conversation summary if there's history
+        if client_memory and client_memory.messages and len(client_memory.messages) > 1:
+            context_parts.extend([
+                "",
+                "=== CONVERSATION SUMMARY ===",
+                f"Total messages exchanged: {len(client_memory.messages)}",
+                "Previous conversation available in message history above."
+            ])
+        
+        context_parts.extend([
+            "",
+            "=== INSTRUCTIONS ===",
+            "- ONLY use information from LEARNED PREFERENCES that the user actually mentioned in conversation",
+            "- Don't assume or reference preferences that aren't shown in the learned preferences section",
+            "- Don't ask for information that's already in the learned preferences",
+            "- If community is 'unknown' and no preferred_communities in learned preferences, ask for community",
+            "- If user asks about availability/pricing but no move_in_date in learned preferences, ask for move-in date",
+            "- Ask for missing critical information one at a time (community first, then move-in date, then other details)",
+            "- Focus on the CURRENT MESSAGE and provide helpful response based on verified context only"
+        ])
+        
+        return "\n".join(context_parts)
+    
+    async def process_message(self, request: ChatRequest, client_memory=None) -> ChatResponse:
         """Process a chat message using Claude and MCP tools."""
         try:
             lead_name = request.lead.name.split()[0]  # First name only
             
-            # Create conversation messages
-            messages: List[MessageParam] = [
-                {
-                    "role": "user",
-                    "content": f"Lead message: {request.message}\n\nLead preferences: {request.preferences.model_dump() if request.preferences else 'None specified'}"
-                }
-            ]
+            # Create conversation messages with comprehensive context
+            messages: List[MessageParam] = []
+            
+            # Build comprehensive context for the current message
+            current_context = self._build_current_context(request, client_memory)
+            
+            # Add conversation history if available
+            if client_memory and client_memory.messages:
+                # Add historical messages
+                for msg in client_memory.messages[:-1]:  # Skip the current message
+                    messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+            
+            # Add current message with full context
+            messages.append({
+                "role": "user",
+                "content": current_context
+            })
             
             # Initial Claude API call
             response = self.client.messages.create(

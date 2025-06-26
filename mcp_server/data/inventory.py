@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import random
 import logging
 from .loader import DataLoader
+from .vector_search import PetPolicyVectorSearch
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -105,6 +106,40 @@ class InventoryService:
         self.pet_policies = self.data_provider.load_pet_policies()
         self.specials = self.data_provider.load_specials()
         logger.info(f"Loaded data: {len(self.communities)} communities, {sum(len(units) for units in self.units.values())} total units")
+        
+        # Initialize vector search for pet policies
+        self._init_vector_search()
+    
+    def _init_vector_search(self):
+        """Initialize vector search for pet policy matching."""
+        try:
+            # Get confidence threshold from config (default 0.6)
+            confidence_threshold = 0.6  # TODO: Make this configurable
+            
+            self.pet_vector_search = PetPolicyVectorSearch(confidence_threshold)
+            
+            if not self.pet_vector_search.enabled:
+                logger.warning("Vector search disabled, using exact matching only")
+                return
+            
+            # Collect all unique pet types across communities
+            all_pet_types = set()
+            for community_policies in self.pet_policies.values():
+                all_pet_types.update(community_policies.keys())
+            
+            if all_pet_types:
+                success = self.pet_vector_search.build_index(list(all_pet_types))
+                if success:
+                    logger.info(f"Vector search initialized with {len(all_pet_types)} pet types")
+                else:
+                    logger.warning("Failed to build vector search index")
+            else:
+                logger.warning("No pet types found for vector search")
+                
+        except Exception as e:
+            logger.error(f"Error initializing vector search: {e}")
+            self.pet_vector_search = PetPolicyVectorSearch(0.6)
+            self.pet_vector_search.enabled = False
     
     def reload_data(self):
         """Reload data using the configured data provider."""
@@ -138,7 +173,7 @@ class InventoryService:
         return available
 
     def get_pet_policy(self, community_id: str, pet_type: str) -> Dict[str, Any]:
-        """Get pet policy for a community and pet type."""
+        """Get pet policy for a community and pet type with vector similarity matching."""
         logger.info(f"Looking up pet policy: community_id={community_id}, pet_type={pet_type}")
         
         if community_id not in self.pet_policies:
@@ -146,13 +181,41 @@ class InventoryService:
             return {"allowed": False, "notes": "Community not found"}
         
         policies = self.pet_policies[community_id]
-        if pet_type not in policies:
-            logger.warning(f"Pet policy for {pet_type} not defined in {community_id}")
-            return {"allowed": False, "notes": f"Policy for {pet_type} not defined"}
         
-        policy = policies[pet_type]
-        logger.info(f"Found pet policy for {pet_type} in {community_id}: allowed={policy.get('allowed', False)}")
-        return policy
+        # Try exact match first
+        if pet_type in policies:
+            policy = policies[pet_type]
+            logger.info(f"Exact match found for {pet_type} in {community_id}: allowed={policy.get('allowed', False)}")
+            return policy
+        
+        # Try vector similarity search
+        if hasattr(self, 'pet_vector_search') and self.pet_vector_search.enabled:
+            try:
+                matched_type, confidence = self.pet_vector_search.find_best_match(pet_type)
+                
+                if matched_type and matched_type in policies:
+                    policy = policies[matched_type].copy()
+                    # Add metadata about the match
+                    policy["matched_type"] = matched_type
+                    policy["confidence"] = confidence
+                    policy["original_query"] = pet_type
+                    
+                    logger.info(f"Vector match: '{pet_type}' -> '{matched_type}' (confidence: {confidence:.3f}) in {community_id}: allowed={policy.get('allowed', False)}")
+                    return policy
+                else:
+                    logger.info(f"No good vector match for '{pet_type}' (confidence: {confidence:.3f}, threshold: {self.pet_vector_search.confidence_threshold})")
+                    
+            except Exception as e:
+                logger.error(f"Vector search failed for '{pet_type}': {e}")
+        
+        # Fallback: no match found
+        available_types = list(policies.keys())
+        logger.warning(f"Pet policy for {pet_type} not found in {community_id}")
+        return {
+            "allowed": False, 
+            "notes": f"Policy for '{pet_type}' not found. Available policies: {', '.join(available_types)}",
+            "available_types": available_types
+        }
 
     def get_pricing(self, community_id: str, unit_id: str, move_in_date: str) -> Optional[Dict[str, Any]]:
         """Get pricing information for a specific unit and move-in date."""

@@ -67,11 +67,12 @@ export const ChatWorkspace: React.FC<ChatWorkspaceProps> = ({
   const handleActionClick = (action: string, data?: any) => {
     switch (action) {
       case 'confirm_tour':
-        addMessage(`Great! I've confirmed your tour for ${new Date(data.time).toLocaleString()}. You'll receive a confirmation email shortly.`, 'agent');
+        const tourDate = data.time ? new Date(data.time).toLocaleString() : 'your requested time';
+        addMessage(`Perfect! I've scheduled your tour for ${tourDate}. You'll receive a confirmation email with all the details shortly. Looking forward to showing you around!`, 'agent');
         setLastResponse(null);
         break;
       case 'connect_human':
-        addMessage('Connecting you with a human agent now. Please hold on...', 'agent');
+        addMessage('I\'m connecting you with one of our leasing specialists now. They\'ll be with you shortly to assist with any additional questions.', 'agent');
         setLastResponse(null);
         break;
     }

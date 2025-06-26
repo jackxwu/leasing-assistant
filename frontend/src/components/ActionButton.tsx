@@ -13,13 +13,13 @@ export const ActionButton: React.FC<ActionButtonProps> = ({ response, onActionCl
       case 'propose_tour':
         const tourTime = response.proposed_time 
           ? new Date(response.proposed_time).toLocaleString()
-          : 'the proposed time';
+          : 'Available Times';
         return (
           <button 
             className="action-button propose-tour"
             onClick={() => onActionClick('confirm_tour', { time: response.proposed_time })}
           >
-            Confirm Tour at {tourTime}
+            Schedule Tour for {tourTime}
           </button>
         );
       

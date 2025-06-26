@@ -20,7 +20,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     action: str  # "propose_tour", "ask_clarification", "handoff_human"
-    proposed_time: Optional[datetime] = None
+    proposed_time: Optional[str] = None  # ISO string format for frontend compatibility
 
 
 class ClientPreferences(BaseModel):

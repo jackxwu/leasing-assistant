@@ -30,6 +30,7 @@ This is implemention of a **Mini Leasing Assistant API** that processes prospect
 - `ask_clarification`: Question needs more details  
 - `handoff_human`: Cannot fulfill automatically
 
+
 ## Overview
 
 This application processes free-text messages (email or SMS) from prospective renters and provides intelligent responses with actionable next steps. The system decides which tools to call, crafts human-ready replies, and returns actions that the front-end can execute.
@@ -38,7 +39,8 @@ This application processes free-text messages (email or SMS) from prospective re
 
 - **Frontend**: React TypeScript chat interface with message list, input bar, and dynamic action buttons
 - **Backend**: FastAPI Python service with intelligent agent logic for processing renter inquiries
-- **Communication**: REST API with CORS-enabled endpoints
+- **MCP Server**: Model Context Protocol server providing standardized tools for availability, pet policies, and pricing
+- **Communication**: REST API with CORS-enabled endpoints between frontend/backend, direct function calls to MCP tools
 
 ## Key Features
 
@@ -47,6 +49,57 @@ This application processes free-text messages (email or SMS) from prospective re
 - **Action-based UI**: Dynamic buttons for tour scheduling, clarification requests, and human handoff
 - **Tour Scheduling**: Automated tour time proposals with confirmation workflow
 - **Human Handoff**: Seamless escalation to human agents when needed
+
+## Session Management
+
+The system maintains conversation context across multiple messages using a client-based session system.
+
+### Session Architecture
+
+**1. Frontend Session Identification:**
+- Browser automatically generates a unique client ID on first visit
+- Stored in browser's localStorage for persistence across page refreshes
+- Client ID is included in every API request to maintain conversation context
+
+**2. Backend Session Storage:**
+- Each client ID maps to a `ClientMemory` object containing:
+  - Full conversation history (user and assistant messages)
+  - Learned preferences extracted from conversation
+  - Lead information and community context
+- Session data persists for the duration of the backend server process
+- Memory includes preference extraction and confidence scoring
+
+**3. Intelligent Clarification System:**
+- System analyzes learned preferences before processing each message
+- Asks clarifying questions when critical information is missing:
+  - **Community**: "Which community or property are you interested in?"
+  - **Move-in Date**: "When are you looking to move in?" (for availability/pricing queries)
+  - **Budget/Requirements**: Asked as conversation progresses
+- Questions are asked in logical order (community first, then move-in date, then details)
+- Won't re-ask for information already captured in session preferences
+
+### Session Flow Example
+
+```
+1. User: "is a 2‑bedroom still available and do you allow cats?"
+   → System: No community in session → Ask for community
+
+2. User: "Sunset Ridge"
+   → System: Extracts community preference → Ask for move-in date
+
+3. User: "July 2025"  
+   → System: Has community + move-in date → Check availability & pet policy
+
+4. User: "What about pricing?"
+   → System: Uses saved community + move-in preferences → Get pricing
+```
+
+### Benefits
+
+- **Contextual Conversations**: No need to repeat information within a session
+- **Progressive Information Gathering**: System builds complete picture over multiple exchanges
+- **Natural Interaction**: Users can ask follow-up questions without re-providing context
+- **Efficient Processing**: Avoids redundant clarification questions
 
 ## API Contract
 
@@ -81,9 +134,94 @@ The system implements a single REST endpoint:
 
 ## Action Types
 
-- **`propose_tour`**: System has enough info to suggest a specific tour slot
-- **`ask_clarification`**: Lead's question is ambiguous or lacks key details  
-- **`handoff_human`**: Request cannot be fulfilled automatically (e.g., no vacancies)
+The system uses a sophisticated action classification system to determine the appropriate next step after processing each user message.
+
+### Action Categories
+
+**`propose_tour`**: System suggests scheduling a property tour
+- **When Used**: After answering 2+ substantial questions about availability, pricing, pets, amenities
+- **Criteria**: User has provided community and move-in date, main concerns addressed
+- **Response**: Includes specific proposed time (2 days ahead at 2 PM by default)
+- **Frontend**: Displays "Schedule Tour for [datetime]" button
+- **User Action**: Click to confirm tour, system shows confirmation message
+
+**`ask_clarification`**: System needs more information to proceed  
+- **When Used**: Missing critical data (community, move-in date, budget) or ambiguous questions
+- **Criteria**: User query requires information not yet captured in session preferences
+- **Response**: Asks specific clarifying questions in logical order
+- **Frontend**: Displays subtle prompt styling, user responds via text input
+- **Flow**: Community → Move-in Date → Other details as needed
+
+**`handoff_human`**: Escalate to human leasing specialist
+- **When Used**: Complex situations, special requests, or system limitations
+- **Criteria**: Queries about lease terms, exceptions, or issues beyond tool capabilities  
+- **Response**: Professional handoff message with context preservation
+- **Frontend**: Displays "Connect with Human Agent" button
+- **User Action**: Click to initiate human contact
+
+### Implementation Architecture
+
+**Backend Action Detection (`claude_agent.py`):**
+```python
+def _extract_action_and_time(self, response_text: str) -> tuple[str, Optional[str]]:
+    # Pattern matching on LLM response content
+    
+    # Tour proposal phrases
+    tour_phrases = ["schedule a tour", "see the unit", "take a look", 
+                   "visit in person", "show you around"]
+    
+    # Clarification phrases  
+    clarification_phrases = ["could you tell me", "which community", 
+                           "when are you looking", "what's your budget"]
+    
+    # Handoff phrases
+    handoff_phrases = ["connect you with", "leasing specialist", 
+                      "human agent", "complex situation"]
+```
+
+**Conversation Context Analysis:**
+- **Substantial Response Tracking**: Counts non-clarification responses to determine tour readiness
+- **Preference Completeness**: Analyzes learned preferences to identify missing information
+- **Timing Logic**: Proposes tours when conversation has sufficient depth (≥2 substantial answers)
+
+**Frontend Action Rendering (`ActionButton.tsx`):**
+```typescript
+switch (response.action) {
+  case 'propose_tour':
+    return <button onClick={() => onActionClick('confirm_tour')}>
+             Schedule Tour for {formatTime(response.proposed_time)}
+           </button>
+           
+  case 'ask_clarification':
+    return <div className="clarification-prompt">
+             Please provide more details
+           </div>
+           
+  case 'handoff_human':
+    return <button onClick={() => onActionClick('connect_human')}>
+             Connect with Human Agent
+           </button>
+}
+```
+
+**Action Flow Integration:**
+1. **LLM Processing**: Claude generates response text with natural language cues
+2. **Pattern Detection**: Backend extracts action type from response content
+3. **Data Enrichment**: Adds proposed times, generates appropriate metadata
+4. **Frontend Rendering**: Displays contextual UI elements based on action type
+5. **User Interaction**: Handles clicks/responses and continues conversation flow
+
+### Smart Action Selection
+
+The system uses conversation context to make intelligent action decisions:
+
+- **Early Stage**: Focuses on `ask_clarification` to gather essential information
+- **Information Gathering**: Asks for community, move-in date, preferences in logical sequence
+- **Engagement Phase**: Provides detailed answers about availability, pricing, policies
+- **Conversion Stage**: Transitions to `propose_tour` when user is sufficiently informed
+- **Exception Handling**: Uses `handoff_human` for edge cases and complex requests
+
+This creates a natural conversation flow that guides users from initial inquiry to tour scheduling or appropriate escalation.
 
 ## Getting Started
 
@@ -194,29 +332,48 @@ This project uses a **simplified MCP approach** rather than the full MCP protoco
 
 The current approach provides the **benefits of MCP** (standardized tool definitions, proper abstractions) without the **complexity of separate processes**. This is ideal for single-application deployments where simplicity and performance are prioritized over protocol standardization.
 
-## Vector Similarity Search for Pet Policies
+## Vector Similarity Search for Pet Policies and Communities
 
-The system uses **FAISS vector similarity search** to intelligently match user pet queries to our predefined pet policy categories.
+The system uses **FAISS vector similarity search** to intelligently match user queries to our predefined data categories for both pet policies and community names.
 
 ### The Problem
-Users ask about pets using natural language that doesn't exactly match our data structure:
+Users ask about pets and communities using natural language that doesn't exactly match our data structure:
+
+**Pet Policy Matching:**
 - User: "Can I have a **hamster**?" → Our data has: `"small_pets"`
 - User: "Do you allow **puppies**?" → Our data has: `"dog"`
 - User: "What about **bunnies**?" → Our data has: `"small_pets"`
 
+**Community Name Matching:**
+- User: "Do you have units at **Sunset**?" → Our data has: `"sunset-ridge"`
+- User: "What about **Oak Valley**?" → Our data has: `"oak-valley-apartments"`
+- User: "Any availability at **Pine**?" → Our data has: `"pine-meadows"`
+
 ### The Solution
 **Vector Semantic Matching:**
-1. **FAISS Index**: Build vector embeddings for all pet types (`dog`, `cat`, `bird`, `fish`, `small_pets`)
-2. **Query Encoding**: Convert user queries ("hamster", "puppy") to vectors using `sentence-transformers`
-3. **Similarity Search**: Find the closest matching pet type with confidence scores
+1. **FAISS Index**: Build vector embeddings for all data categories:
+   - Pet types: `dog`, `cat`, `bird`, `fish`, `small_pets`
+   - Community names: `sunset-ridge`, `oak-valley-apartments`, `pine-meadows`
+2. **Query Encoding**: Convert user queries to vectors using `sentence-transformers`
+3. **Similarity Search**: Find the closest matching category with confidence scores
 4. **Intelligent Fallback**: Falls back to exact matching if vector search fails
 
 ### Example Matches
+
+**Pet Policy Matches:**
 ```
 "hamster" → "small_pets" (confidence: 0.78)
 "puppy" → "dog" (confidence: 0.85)
 "kitten" → "cat" (confidence: 0.82)
 "bunny" → "small_pets" (confidence: 0.76)
+```
+
+**Community Name Matches:**
+```
+"Sunset" → "sunset-ridge" (confidence: 0.82)
+"Oak Valley" → "oak-valley-apartments" (confidence: 0.89)
+"Pine" → "pine-meadows" (confidence: 0.75)
+"Ridge" → "sunset-ridge" (confidence: 0.71)
 ```
 
 ### Configuration
@@ -225,7 +382,7 @@ Users ask about pets using natural language that doesn't exactly match our data 
 - **Fallback**: Exact string matching if vector search fails
 - **Caching**: Search results cached for performance
 
-This enables natural conversation while maintaining accurate policy lookups.
+This enables natural conversation while maintaining accurate policy and community lookups.
 
 ## Project Structure
 
@@ -240,6 +397,10 @@ This enables natural conversation while maintaining accurate policy lookups.
 │   │   ├── api/          # API routes
 │   │   ├── models/       # Pydantic schemas
 │   │   └── services/     # Business logic
+├── mcp_server/        # Model Context Protocol server
+│   ├── data/             # Inventory data and vector search
+│   ├── tools/            # MCP tool implementations
+│   └── __init__.py       # MCP server initialization
 ├── Makefile           # Development automation
 └── DEVELOPMENT.md     # Setup and testing guide
 ```

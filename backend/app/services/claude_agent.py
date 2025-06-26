@@ -117,8 +117,13 @@ IMPORTANT CONTEXT HANDLING:
 
 Available Actions:
 - "propose_tour": When you want to suggest scheduling a tour (include a proposed_time)
+  * Use this when you've answered the lead's main questions about availability, pricing, pets, amenities, etc.
+  * Ideal after providing 2-3 substantial answers about their specific needs
+  * Should feel natural, not pushy - "Would you like to see the unit in person?"
 - "ask_clarification": When you need more information that hasn't been provided before
+  * Use for missing critical info like community, move-in date, budget, specific preferences
 - "handoff_human": When the inquiry is complex or requires human assistance
+  * Use for complex lease terms, special situations, or when you can't help with tools
 
 Guidelines:
 - Always check availability, pet policies, and pricing using the provided tools
@@ -174,23 +179,38 @@ Remember: You have access to real-time data through tools, so use them to provid
         
         return results
     
-    def _extract_action_and_time(self, response_text: str) -> tuple[str, Optional[datetime]]:
+    def _extract_action_and_time(self, response_text: str) -> tuple[str, Optional[str]]:
         """Extract action and proposed time from Claude's response."""
         # Simple heuristics to determine action
         text_lower = response_text.lower()
         
-        # Check for tour proposals
-        if any(phrase in text_lower for phrase in ["schedule a tour", "tour available", "would you like to see", "tour time"]):
-            # Generate a proposed time (next few days)
-            proposed_time = datetime.now() + timedelta(days=2, hours=14)  # 2 PM in 2 days
+        # Check for tour proposals (expanded patterns)
+        tour_phrases = [
+            "schedule a tour", "tour available", "would you like to see", "tour time",
+            "see the unit", "take a look", "visit in person", "schedule a viewing",
+            "show you around", "come see", "check it out", "visit the property"
+        ]
+        if any(phrase in text_lower for phrase in tour_phrases):
+            # Generate a proposed time (next few days, business hours)
+            proposed_datetime = datetime.now() + timedelta(days=2, hours=14)  # 2 PM in 2 days
+            proposed_time = proposed_datetime.isoformat()  # Convert to ISO string for frontend
             return "propose_tour", proposed_time
         
         # Check for clarification requests
-        elif any(phrase in text_lower for phrase in ["could you tell me", "what are you looking for", "more information", "help me understand"]):
+        clarification_phrases = [
+            "could you tell me", "what are you looking for", "more information", 
+            "help me understand", "which community", "when are you looking", 
+            "what's your budget", "tell me more", "need to know"
+        ]
+        if any(phrase in text_lower for phrase in clarification_phrases):
             return "ask_clarification", None
         
         # Check for human handoff indicators
-        elif any(phrase in text_lower for phrase in ["connect you with", "leasing specialist", "specialist", "complex"]):
+        handoff_phrases = [
+            "connect you with", "leasing specialist", "specialist", "complex",
+            "human agent", "leasing office", "contact our team"
+        ]
+        if any(phrase in text_lower for phrase in handoff_phrases):
             return "handoff_human", None
         
         # Default to clarification if unclear
@@ -231,10 +251,24 @@ Remember: You have access to real-time data through tools, so use them to provid
         
         # Add conversation summary if there's history
         if client_memory and client_memory.messages and len(client_memory.messages) > 1:
+            # Count assistant messages that provided substantial information
+            assistant_responses = [msg for msg in client_memory.messages if msg["role"] == "assistant"]
+            substantial_responses = 0
+            
+            for response in assistant_responses:
+                # Count responses that aren't just asking for clarification
+                content = response["content"].lower()
+                if not any(phrase in content for phrase in [
+                    "which community", "when are you looking to move", "what's your budget",
+                    "tell me more", "could you", "what are you looking for"
+                ]):
+                    substantial_responses += 1
+            
             context_parts.extend([
                 "",
                 "=== CONVERSATION SUMMARY ===",
                 f"Total messages exchanged: {len(client_memory.messages)}",
+                f"Substantial answers provided: {substantial_responses}",
                 "Previous conversation available in message history above."
             ])
         
@@ -247,6 +281,13 @@ Remember: You have access to real-time data through tools, so use them to provid
             "- If community is 'unknown' and no preferred_communities in learned preferences, ask for community",
             "- If user asks about availability/pricing but no move_in_date in learned preferences, ask for move-in date",
             "- Ask for missing critical information one at a time (community first, then move-in date, then other details)",
+            "",
+            "TOUR PROPOSAL TIMING:",
+            "- Consider proposing a tour when substantial_answers >= 2 AND you've addressed their main concerns",
+            "- Good timing: after confirming availability, answering about pets, discussing pricing/amenities",
+            "- Don't propose tours too early (when still gathering basic info) or repeatedly",
+            "- Make tour suggestions feel natural: 'Would you like to see the unit in person?' or 'Ready to take a look?'",
+            "",
             "- Focus on the CURRENT MESSAGE and provide helpful response based on verified context only"
         ])
         

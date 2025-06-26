@@ -2,9 +2,11 @@
 Unit tests for API routes.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
+
 from app.main import app
 from app.models.schemas import ChatResponse
 

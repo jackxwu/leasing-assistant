@@ -9,11 +9,11 @@ These are the three required domain tools that the LLM agent will orchestrate:
 Functions return structured data that can be used by the LLM to craft responses.
 """
 
-from typing import Dict, Any, Optional, List
-from datetime import datetime
-import sys
-import os
 import logging
+import os
+import sys
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from data import InventoryService
 

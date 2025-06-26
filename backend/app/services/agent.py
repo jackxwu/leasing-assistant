@@ -4,10 +4,11 @@ Agent service that routes to appropriate LLM implementation.
 
 import asyncio
 import logging
-from typing import Optional, Dict, List
 from datetime import datetime
-from app.models.schemas import ChatRequest, ChatResponse, ClientPreferences
+from typing import Dict, List, Optional
+
 from app.core.config import config
+from app.models.schemas import ChatRequest, ChatResponse, ClientPreferences
 from app.services.claude_agent import ClaudeAgentService
 from app.services.preference_extractor import PreferenceExtractor
 

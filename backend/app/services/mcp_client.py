@@ -5,9 +5,9 @@ MCP Client for connecting to the leasing assistant MCP server.
 import asyncio
 import json
 import logging
-from typing import Dict, Any, Optional
 import subprocess
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

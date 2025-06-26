@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
+
+from app.core.logging import get_logger
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services.agent import AgentService
-from app.core.logging import get_logger
 
 router = APIRouter()
 agent_service = AgentService()
@@ -30,13 +31,6 @@ async def reply_to_message(chat_request: ChatRequest, request: Request) -> ChatR
     except Exception as e:
         logger.error(f"Error processing chat request - ID: {request_id}, Error: {str(e)}")
         raise
-
-@router.get("/api/memory/stats")
-async def get_memory_stats():
-    """
-    Get agent memory statistics.
-    """
-    return agent_service.get_memory_stats()
 
 @router.get("/api/conversation/{client_id}")
 async def get_conversation_history(client_id: str):

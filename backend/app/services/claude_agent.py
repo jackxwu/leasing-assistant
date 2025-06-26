@@ -6,9 +6,11 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
 import anthropic
 from anthropic.types import MessageParam, ToolUseBlock, ToolParam
+
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services.mcp_client import mcp_client
 

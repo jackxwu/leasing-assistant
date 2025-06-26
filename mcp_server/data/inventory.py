@@ -3,10 +3,11 @@ Inventory service that can load data from JSON files or database.
 Provides apartment data for testing and production environments.
 """
 
-from typing import Dict, List, Any, Optional, Protocol
-from datetime import datetime, timedelta
-import random
 import logging
+import random
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Protocol
+
 from .loader import DataLoader
 from .vector_search import PetPolicyVectorSearch
 

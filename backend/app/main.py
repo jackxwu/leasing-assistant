@@ -1,10 +1,12 @@
+import time
+import uuid
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.routes import router
 from app.core.config import config
 from app.core.logging import setup_logging, get_logger
-import time
-import uuid
 
 # Setup logging first
 setup_logging()
@@ -22,10 +24,10 @@ app = FastAPI(
 cors_config = config.get_section("cors")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_config.get("allow_origins", ["http://localhost:3000"]),
-    allow_credentials=cors_config.get("allow_credentials", True),
-    allow_methods=cors_config.get("allow_methods", ["*"]),
-    allow_headers=cors_config.get("allow_headers", ["*"]),
+    allow_origins=cors_config.get("allow_origins"),
+    allow_credentials=cors_config.get("allow_credentials"),
+    allow_methods=cors_config.get("allow_methods"),
+    allow_headers=cors_config.get("allow_headers"),
 )
 
 # Request logging middleware

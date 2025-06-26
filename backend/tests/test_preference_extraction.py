@@ -2,12 +2,14 @@
 Unit tests for preference extraction integration.
 """
 
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from app.models.schemas import ChatRequest, ClientPreferences, Lead
 from app.services.agent import AgentService, ClientMemory
 from app.services.preference_extractor import PreferenceExtractor
-from app.models.schemas import ChatRequest, Lead, ClientPreferences
 
 
 class TestPreferenceExtraction:

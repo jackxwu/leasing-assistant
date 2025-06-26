@@ -2,12 +2,14 @@
 Unit tests for the Agent Service and Claude integration.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
+from app.models.schemas import ChatRequest, ChatResponse, Lead, Preferences
 from app.services.agent import AgentService
 from app.services.claude_agent import ClaudeAgentService
-from app.models.schemas import ChatRequest, ChatResponse, Lead, Preferences
 
 
 class TestAgentService:

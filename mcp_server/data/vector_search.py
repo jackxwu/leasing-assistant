@@ -2,11 +2,11 @@
 Vector similarity search for pet policy matching using FAISS.
 """
 
+import json
 import logging
 import os
-from typing import Dict, List, Tuple, Optional
-import json
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
